@@ -36,64 +36,50 @@ function Products(){
 
    
 
-   const AddProduct = useMutation({
-      mutationFn: ( product ) => {
-        
-        return fetch('https://64361a378205915d34ec0e89.mockapi.io/products', 
-        { 
-          method:'post',
-          headers: {
-             "Content-Type": "application/json",          
+   const mutation = useMutation({
+         mutationFn : ( product ) => {
+          const { method, url, name } = product ;
+
+          return fetch( url, { 
+            method, 
+            headers: {
+              "Content-Type": "application/json",          
+           },
+            body: JSON.stringify(name) });
           },
-          body:JSON.stringify( product )
-        }).then( res => console.log( res))
-      },
-    
-      
-      
-   })
-
-   const updateProduct = useMutation({
-    mutationFn: ( product ) => {
-      
-      return fetch(`https://64361a378205915d34ec0e89.mockapi.io/products/${ product.id}`,
-      { 
-        method:'PUT',
-        headers: {
-           "Content-Type": "application/json",          
-        },
-        body:JSON.stringify( product )
-      }).then( res => console.log( res))
-    },
-  
-   
-  })
-
-   const deteleProduct = useMutation({
-    mutationFn: ( id ) => {
-      return fetch(`https://64361a378205915d34ec0e89.mockapi.io/products/${ id} `, 
-      { 
-        method:'DELETE',
         
-      }).then( res => console.log( res.json()))
-    },
-    
- })
+          onSuccess: ( data ) => console.log( data )
+          ,          
+          
+          onError: (error) => {
+            console.error('Error:', error);
+          },
+        
+   }
+  );
 
-
-
-
-
- 
-
+  const handleCreate = ( name ) => {
+    mutation.mutate({ method: 'POST', url: 'https://64361a378205915d34ec0e89.mockapi.io/products',  name : name  });
+  };
 
   
+
+  const handleUpdate = ( product ) => {
+    mutation.mutate({ method: 'PUT', url: `https://64361a378205915d34ec0e89.mockapi.io/products/${ product.id }`
+    , data: { id: product.id, name: product.name } });
+  }; 
+
+  // const handleDelete = ( id) => {
+  //   mutate.mutate({ method: 'DELETE', url: `https://64361a378205915d34ec0e89.mockapi.io/products/${ id }` });
+  // };
+
+
   if ( query.isLoading) return 'Loading...'
 
   if ( query.isError) return 'An error has occurred: ' + query.error + query.status
-
-  queryClient.invalidateQueries(['products'])
   
+  queryClient.invalidateQueries['products'];
+
   return(
     <>
       <form>
@@ -104,8 +90,8 @@ function Products(){
         { 
         query.data.map( product => 
         <li key={ product.id }>{ product.name }
-        <button onClick={ ()=>{ deteleProduct.mutate( product.id )}}>delete</button>
-        <button onClick={ ()=>updateProduct.mutate( { id:product.id , name: inputEl.current.value } )}>Update</button>
+        {/* <button onClick={ ()=>{ handleDelete( product.id )}}>delete</button> */}
+        <button onClick={ ()=>handleUpdate( { id:product.id , name: inputEl.current.value } )}>Update</button>
         </li>
       
         
@@ -114,20 +100,18 @@ function Products(){
       </ul>
           
       <div>
-      {AddProduct.isLoading ? ( 
+      {mutation.isLoading ? ( 
         'Adding new product...'
       ) : (
         <>
-          {AddProduct.isError ? (
+          {mutation.isError ? (
             <div>An error occurred: {mutation.error.message}</div>
           ) : null}
 
-          {AddProduct.isSuccess ? <div>new product added</div> : null}
+          {mutation.isSuccess ? <div>new product added</div> : null}
 
           <button
-            onClick={() => {
-              AddProduct.mutate({ name: inputEl.current.value } )
-            }}
+            onClick={() =>  handleCreate( inputEl.current.value ) }
           >
             Add Product
           </button>
