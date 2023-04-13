@@ -2,7 +2,7 @@ import { useQuery,
   useMutation, useQueryClient
  } from '@tanstack/react-query';
 import './App.css'
-import { useState, useEffect , useRef } from 'react';
+import { useState, useRef } from 'react';
 
 
 
@@ -22,6 +22,7 @@ function App() {
 function Products(){
  
   const inputEl = useRef(null);
+  const [ message , setMessage  ] = useState('');
   const queryClient = useQueryClient()
   
 
@@ -46,11 +47,12 @@ function Products(){
              "Content-Type": "application/json",          
           },
           body:JSON.stringify( product )
-        }).then( res => console.log( res))
+        }).then( res =>  res.json() )
       },
     
-      
-      
+    onMutate:() => setMessage('product adding' ),
+    onSuccess: () =>  setMessage('product added' ),
+    onerror :  () => setMessage( <div>An error occurred: { AddProduct.error.message }</div> )
    })
 
    const updateProduct = useMutation({
@@ -63,9 +65,12 @@ function Products(){
            "Content-Type": "application/json",          
         },
         body:JSON.stringify( product )
-      }).then( res => console.log( res))
+      }).then(  res =>  res.json() )
     },
   
+    onMutate:() => setMessage('product updating' ),
+    onSuccess: () =>  setMessage('product updated' ),
+    onerror :  () => setMessage( <div>An error occurred: { AddProduct.error.message }</div> )
    
   })
 
@@ -75,9 +80,12 @@ function Products(){
       { 
         method:'DELETE',
         
-      }).then( res => console.log( res.json()))
+      }).then(  res =>  res.json())
     },
     
+    onMutate:() => setMessage('product deleting' ),
+    onSuccess: () =>  setMessage('product deleted' ),
+    onerror :  () => setMessage( <div>An error occurred: { AddProduct.error.message }</div> )
  })
 
 
@@ -88,11 +96,19 @@ function Products(){
 
 
   
-  if ( query.isLoading) return 'Loading...'
+  if ( query.isLoading) return 'Loading...';
 
-  if ( query.isError) return 'An error has occurred: ' + query.error + query.status
+  if ( query.isError) return 'An error has occurred: ' + query.error;
+
+
+ 
+
 
   queryClient.invalidateQueries(['products'])
+
+
+
+
   
   return(
     <>
@@ -105,7 +121,7 @@ function Products(){
         query.data.map( product => 
         <li key={ product.id }>{ product.name }
         <button onClick={ ()=>{ deteleProduct.mutate( product.id )}}>delete</button>
-        <button onClick={ ()=>updateProduct.mutate( { id:product.id , name: inputEl.current.value } )}>Update</button>
+        <button onClick={ ()=>updateProduct.mutate( { id:product.id , name: inputEl.current.value } )}>update</button>
         </li>
       
         
@@ -114,16 +130,8 @@ function Products(){
       </ul>
           
       <div>
-      {AddProduct.isLoading ? ( 
-        'Adding new product...'
-      ) : (
-        <>
-          {AddProduct.isError ? (
-            <div>An error occurred: {mutation.error.message}</div>
-          ) : null}
-
-          {AddProduct.isSuccess ? <div>new product added</div> : null}
-
+     
+          <p>{  message }</p>
           <button
             onClick={() => {
               AddProduct.mutate({ name: inputEl.current.value } )
@@ -133,8 +141,7 @@ function Products(){
           </button>
           
           
-        </>
-      )}
+      
     </div>
 
 
