@@ -1,6 +1,4 @@
-import { useQuery,
-  useMutation, useQueryClient
- } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import './App.css'
 import { useState, useRef } from 'react';
 
@@ -9,11 +7,8 @@ import { useState, useRef } from 'react';
 
 
 function App() {
-
-  return(
-  
-      <Products />
-  
+  return(  
+      <Products />  
   )
 
 }
@@ -26,21 +21,27 @@ function Products(){
   const queryClient = useQueryClient()
   
 
-  const getProducts = () => fetch( 'https://64361a378205915d34ec0e89.mockapi.io/products')
+  const getProducts = () => fetch( 'https://64361a378205915d34ec0e89.mockapi.io/api/products')
                             .then( 
                             res  => res.json() ) 
   
 
 
-   const query = useQuery( { queryKey: ['products'],   queryFn: getProducts })
+   const query = useQuery( {
+      queryKey: ['products'],
+      queryFn: getProducts ,
+      // staleTime: 3000, // data can remain stale for up to 5 seconds
+      // cacheTime: 60000,// data will be in the cache for 1 minute 
+      // refetchInterval:10000,//remove the comment , make broweser Idle, and see how it
+   
+    })
   
 
    
-
    const AddProduct = useMutation({
       mutationFn: ( product ) => {
         
-        return fetch('https://64361a378205915d34ec0e89.mockapi.io/products', 
+        return fetch('https://64361a378205915d34ec0e89.mockapi.io/api/products', 
         { 
           method:'post',
           headers: {
@@ -54,11 +55,11 @@ function Products(){
     onSuccess: () =>  setMessage('product added' ),
     onerror :  () => setMessage( <div>An error occurred: { AddProduct.error.message }</div> )
    })
-
+  
    const updateProduct = useMutation({
     mutationFn: ( product ) => {
       
-      return fetch(`https://64361a378205915d34ec0e89.mockapi.io/products/${ product.id}`,
+      return fetch(`https://64361a378205915d34ec0e89.mockapi.io/api/products/${ product.id}`,
       { 
         method:'PUT',
         headers: {
@@ -76,7 +77,7 @@ function Products(){
 
    const deteleProduct = useMutation({
     mutationFn: ( id ) => {
-      return fetch(`https://64361a378205915d34ec0e89.mockapi.io/products/${ id} `, 
+      return fetch(`https://64361a378205915d34ec0e89.mockapi.io/api/products/${ id} `, 
       { 
         method:'DELETE',
         
@@ -90,21 +91,15 @@ function Products(){
 
 
 
-
-
- 
-
-
   
   if ( query.isLoading) return 'Loading...';
-
   if ( query.isError) return 'An error has occurred: ' + query.error;
 
 
  
 
 
-  queryClient.invalidateQueries(['products'])
+  queryClient.invalidateQueries(['products'])// for invalidating query results after adding, updating and deleting API data
 
 
 

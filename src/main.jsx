@@ -4,15 +4,17 @@ import App from './App'
 import './index.css'
 import { QueryClientProvider , QueryClient }from '@tanstack/react-query';
 
-
+// import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   
       <React.StrictMode>
-        <QueryClientProvider client={ queryClient }>
+          <QueryClientProvider client={ queryClient }>
              <App />
+             {/* You can remove the follwing comments to use React query dev tools */}
+          {/* <ReactQueryDevtools initialIsOpen={ false } position='bottom-right' /> */}
         </QueryClientProvider>
       </React.StrictMode>
 )
